@@ -86,7 +86,7 @@
         const livesElement = document.getElementById('lives');
 
         // 创建星星数组
-        const stars = Array(100).fill().map(() => ({
+        const stars = Array(150).fill().map(() => ({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
             size: Math.random() * 2 + 1,
@@ -342,22 +342,23 @@
 
         // 游戏主循环
         function gameLoop(currentTime) {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            drawStars();
-            update(currentTime);
-            
-            if (!gameOver) {
-                drawPlayer();
-                drawBullets();
-                drawBubbles();
-            } else {
-                drawGameOver();
-            }
+    drawStars();  // 添加这行
+    updateStars(); // 添加这行
+    update(currentTime);
+    
+    if (!gameOver) {
+        drawPlayer();
+        drawBullets();
+        drawBubbles();
+    } else {
+        drawGameOver();
+    }
 
-            requestAnimationFrame(gameLoop);
-        }
+    requestAnimationFrame(gameLoop);
+}
 
         // 等待图片加载完成后再开始游戏
         if (!gameStarted) {
