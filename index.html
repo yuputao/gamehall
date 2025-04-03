@@ -65,31 +65,22 @@
         </div>
     </div>   
     <script>
-        const canvas = document.getElementById('gameCanvas');
+                const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const scoreElement = document.getElementById('score');
         const levelElement = document.getElementById('level');
         const livesElement = document.getElementById('lives');
 
-        // 创建星星数组
-        const stars = Array(50).fill().map(() => ({
+        // 创建星星数组（减少数量，使背景更清晰）
+        const stars = Array(30).fill().map(() => ({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
             size: 1,
-            speed: 0.3,
-            brightness: 0.8
+            speed: 0.3
         }));
 
-        // 预加载飞船图片
-        const shipImage = new Image();
-        let gameStarted = false;
-        shipImage.onload = function() {
-            gameStarted = true;
-            requestAnimationFrame(gameLoop);
-        };
-        shipImage.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAB2AAAAdgB+lymcgAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAKsSURBVFiF7ZbNa1xVGMZ/577MpJ1JJ5PWJrYxbWMSMGlriBtBEFy4UHDhRnDhQkQQdCEIgv4JrkVcCi5cuXAjbnTlRtSFuBJ0IVhB26Yx6YfSJk0zk5l7z+PinJu5M7kzuR+JIOQHh/ue+77nPM/7cc69V1SVu2l2V6P/B/C/BxCpO7lz3H7SLPKEwIuKPCvIw4KkgBjQBbQF7gPAb8A3wNequJ0wSaR6B3Z2kMeAV4EXAAfQKoYKcAP4EPgkn+NG7QvVAOzsILuA14CXgRZAoqtXQQFfkRJwGPgon+N6GMgsgJ0d5HHgDeB5wKgGUEUVvEAJKAK3gVvAMBAHEkAaSAPzgfeAD/I5fg4CmQGws4M8DbwPbA/NFVRAFXyFMlBWpaTKlCojKFcRvlNlBGEaIQZkgEXAPcBaYDvwbj7H0SBIBMDODvI88BawLJirKgrgKz7CpCpFVYqqjKFMCvylypQqU0BRlTGBvCr9CIOqFBQmEGYj9ABrgF35HJ/XB7Czg+wG3gTuC+YKKKr4KKMoV1S5pMoNVf5UZQxlEuWWKsOqDKtySZU/VLmsyqjCJIIP1Qg0A6uBl+zsIBumAOzsIM8C+4FsaK4CquABV4CLqgyo0o9yUZVrwJAqV1W5osqQKv2qXFBlAGVElRIgqvgI9Qi0AZuBfTs7yKOGnR2kE3gbWBY1V1BPwVe4CfQp/KzQp3BB4TfgksIVoF/hZ4U+4CYwgeIr+AhajUC4Ei3AKuANOzvIUgM4ACwIXlAUzyuD74HvKOAr+AqewgRwDfge+Bb4FvgOGFTwUPAUfMBX8JXp5oTLEAeWAAcM4AVgbmCu4Lv4PngKvkJZoQxMApPAGDAKjAB/A38Bv6P8gHIdGFeYDN4pK/i+4qngK3jK9CkJlyEGLAYeNoAHgNSsuwc8QBXKKKWZcYEYkAaaDWBuTYQKCp6CF5orUEYoR+YKZZRy1Px/EYH/DsA/6VQzZh8/GAYAAAAASUVORK5CYII=';
-
         // 游戏状态
+        let gameStarted = true;  // 直接设为 true
         let score = 0;
         let level = 1;
         let lives = 3;
@@ -99,14 +90,19 @@
         let bubblesCleared = 0;
         let totalBubbles = 10;
 
-        // 玩家飞船
-        const player = {
-            x: canvas.width / 2,
-            y: canvas.height - 30,
-            width: 40,
-            height: 40,
-            speed: 5
-        };
+         // 绘制玩家飞船（三角形）
+        function drawPlayer() {
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.beginPath();
+            ctx.fillStyle = '#4CAF50';  // 绿色
+            ctx.moveTo(0, -20);    // 三角形顶点
+            ctx.lineTo(-15, 10);   // 左下角
+            ctx.lineTo(15, 10);    // 右下角
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
 
         // 子弹和泡泡数组
         let bullets = [];
@@ -324,7 +320,7 @@
             lastShot = 0;
         }
 
-        // 游戏主循环
+                // 游戏主循环
         function gameLoop(currentTime) {
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -343,7 +339,8 @@
             requestAnimationFrame(gameLoop);
         }
 
-        // 等待图片加载完成后再开始游戏
+        // 直接开始游戏
+        requestAnimationFrame(gameLoop);
         if (!gameStarted) {
             ctx.fillStyle = '#fff';
             ctx.font = '24px Arial';
