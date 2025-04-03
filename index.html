@@ -85,9 +85,23 @@
         const levelElement = document.getElementById('level');
         const livesElement = document.getElementById('lives');
 
-        // 预加载图片
+        // 创建星星数组
+        const stars = Array(100).fill().map(() => ({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 2 + 1,
+            speed: Math.random() * 0.5 + 0.1
+        }));
+
+        // 预加载飞船图片
         const shipImage = new Image();
-        shipImage.src = 'data:image/png;base64,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';
+        shipImage.src = 'data:image/png;base64,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';
+
+        let gameStarted = false;
+        shipImage.onload = function() {
+            gameStarted = true;
+            requestAnimationFrame(gameLoop);
+        };
 
         // 游戏状态
         let score = 0;
@@ -97,7 +111,7 @@
         let lastTime = 0;
         let lastShot = 0;
         let bubblesCleared = 0;
-        let totalBubbles = 10; // 每关需要清除的泡泡数
+        let totalBubbles = 10;
 
         // 玩家飞船
         const player = {
@@ -141,9 +155,33 @@
             return colors[Math.floor(Math.random() * colors.length)];
         }
 
+        // 更新星星位置
+        function updateStars() {
+            stars.forEach(star => {
+                star.y += star.speed;
+                if (star.y > canvas.height) {
+                    star.y = 0;
+                    star.x = Math.random() * canvas.width;
+                }
+            });
+        }
+
+        // 绘制星空背景
+        function drawStars() {
+            stars.forEach(star => {
+                ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.5})`;
+                ctx.fillRect(star.x, star.y, star.size, star.size);
+            });
+        }
+
         // 绘制玩家飞船
         function drawPlayer() {
-            ctx.drawImage(shipImage, player.x - 20, player.y - 20, 40, 40);
+            if (gameStarted) {
+                ctx.save();
+                ctx.translate(player.x, player.y);
+                ctx.drawImage(shipImage, -20, -20, 40, 40);
+                ctx.restore();
+            }
         }
 
         // 绘制子弹
@@ -161,7 +199,7 @@
             bubbles.forEach(bubble => {
                 ctx.beginPath();
                 ctx.arc(bubble.x, bubble.y, 15, 0, Math.PI * 2);
-                ctx.fillStyle = bubble.color + '80'; // 添加透明度
+                ctx.fillStyle = bubble.color + '80';
                 ctx.fill();
                 ctx.strokeStyle = bubble.color;
                 ctx.lineWidth = 2;
@@ -178,6 +216,8 @@
         // 更新游戏状态
         function update(currentTime) {
             if (gameOver) return;
+
+            updateStars();
 
             // 移动玩家
             if (keys.left && player.x > 20) player.x -= player.speed;
@@ -228,11 +268,10 @@
                         bubblesCleared++;
                         scoreElement.textContent = 'Score: ' + score;
                         
-                        // 检查是否完成关卡
                         if (bubblesCleared >= totalBubbles) {
                             level++;
                             bubblesCleared = 0;
-                            totalBubbles += 5; // 每关增加5个泡泡
+                            totalBubbles += 5;
                             levelElement.textContent = 'Level: ' + level;
                         }
                         break;
@@ -257,7 +296,6 @@
                     }
                 }
 
-                // 移除超出屏幕的泡泡
                 if (bubble.y > canvas.height) {
                     bubbles.splice(i, 1);
                 }
@@ -307,17 +345,7 @@
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 绘制星空背景
-            for (let i = 0; i < 50; i++) {
-                ctx.fillStyle = 'rgba(255, 255, 255, ' + Math.random() + ')';
-                ctx.fillRect(
-                    Math.random() * canvas.width,
-                    Math.random() * canvas.height,
-                    1,
-                    1
-                );
-            }
-
+            drawStars();
             update(currentTime);
             
             if (!gameOver) {
@@ -331,8 +359,13 @@
             requestAnimationFrame(gameLoop);
         }
 
-        // 开始游戏
-        requestAnimationFrame(gameLoop);
+        // 等待图片加载完成后再开始游戏
+        if (!gameStarted) {
+            ctx.fillStyle = '#fff';
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Loading...', canvas.width/2, canvas.height/2);
+        }
     </script>
 </body>
 </html>
