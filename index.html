@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>GameHall - 太空射击游戏</title>
+    <title>GameHall - Space Bubble Shooter</title>
     <style>
         body {
             display: flex;
@@ -11,30 +11,37 @@
             min-height: 100vh;
             margin: 0;
             background-color: #1a1a1a;
+            background-image: linear-gradient(45deg, #1a1a1a 0%, #2c3e50 100%);
             color: white;
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             flex-direction: column;
         }
         .game-container {
             text-align: center;
             padding: 20px;
-            background-color: #333;
-            border-radius: 10px;
+            background-color: rgba(51, 51, 51, 0.9);
+            border-radius: 15px;
             margin: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
         canvas {
-            background-color: black;
+            background-color: rgba(0, 0, 0, 0.8);
             border: 2px solid #444;
-            border-radius: 5px;
+            border-radius: 10px;
             margin: 20px 0;
         }
-        #score {
-            font-size: 24px;
-            color: #4CAF50;
+        .stats {
+            display: flex;
+            justify-content: space-around;
             margin: 10px 0;
+            font-size: 20px;
+        }
+        #score, #level, #lives {
+            color: #4CAF50;
+            margin: 0 15px;
         }
         .controls {
-            background-color: #222;
+            background-color: rgba(34, 34, 34, 0.8);
             padding: 15px;
             border-radius: 8px;
             margin: 10px 0;
@@ -45,19 +52,29 @@
             padding: 2px 8px;
             border-radius: 4px;
             margin: 0 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            color: #4CAF50;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
     <div class="game-container">
-        <h1>太空射击游戏</h1>
-        <div id="score">分数: 0</div>
+        <h1>Space Bubble Shooter</h1>
+        <div class="stats">
+            <div id="score">Score: 0</div>
+            <div id="level">Level: 1</div>
+            <div id="lives">Lives: 3</div>
+        </div>
         <canvas id="gameCanvas" width="400" height="600"></canvas>
         <div class="controls">
-            <p>游戏控制：</p>
-            <p>- 使用 <span class="key">←</span> <span class="key">→</span> 方向键移动飞船</p>
-            <p>- 按 <span class="key">空格键</span> 发射子弹</p>
-            <p>- 击中敌人得分，碰到敌人游戏结束</p>
+            <p>Controls:</p>
+            <p>- Move: <span class="key">←</span> <span class="key">→</span> arrow keys</p>
+            <p>- Shoot: <span class="key">SPACE</span></p>
+            <p>- Clear all bubbles to advance to next level!</p>
         </div>
     </div>
 
@@ -65,25 +82,35 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const scoreElement = document.getElementById('score');
+        const levelElement = document.getElementById('level');
+        const livesElement = document.getElementById('lives');
+
+        // 预加载图片
+        const shipImage = new Image();
+        shipImage.src = 'data:image/png;base64,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';
 
         // 游戏状态
         let score = 0;
+        let level = 1;
+        let lives = 3;
         let gameOver = false;
         let lastTime = 0;
         let lastShot = 0;
+        let bubblesCleared = 0;
+        let totalBubbles = 10; // 每关需要清除的泡泡数
 
         // 玩家飞船
         const player = {
             x: canvas.width / 2,
             y: canvas.height - 30,
-            width: 30,
-            height: 30,
+            width: 40,
+            height: 40,
             speed: 5
         };
 
-        // 子弹和敌人数组
+        // 子弹和泡泡数组
         let bullets = [];
-        let enemies = [];
+        let bubbles = [];
 
         // 控制状态
         const keys = {
@@ -98,7 +125,7 @@
             if (e.key === 'ArrowRight') keys.right = true;
             if (e.key === ' ') {
                 keys.space = true;
-                e.preventDefault(); // 防止页面滚动
+                e.preventDefault();
             }
         });
 
@@ -108,34 +135,42 @@
             if (e.key === ' ') keys.space = false;
         });
 
+        // 生成随机颜色
+        function getRandomColor() {
+            const colors = ['#FF69B4', '#87CEEB', '#98FB98', '#DDA0DD', '#F0E68C'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
         // 绘制玩家飞船
         function drawPlayer() {
-            ctx.fillStyle = '#4CAF50';
-            ctx.beginPath();
-            ctx.moveTo(player.x, player.y - 15);
-            ctx.lineTo(player.x - 15, player.y + 15);
-            ctx.lineTo(player.x + 15, player.y + 15);
-            ctx.closePath();
-            ctx.fill();
+            ctx.drawImage(shipImage, player.x - 20, player.y - 20, 40, 40);
         }
 
         // 绘制子弹
         function drawBullets() {
             ctx.fillStyle = '#fff';
             bullets.forEach(bullet => {
-                ctx.fillRect(bullet.x - 2, bullet.y - 8, 4, 8);
+                ctx.beginPath();
+                ctx.arc(bullet.x, bullet.y, 3, 0, Math.PI * 2);
+                ctx.fill();
             });
         }
 
-        // 绘制敌人
-        function drawEnemies() {
-            ctx.fillStyle = '#ff4444';
-            enemies.forEach(enemy => {
+        // 绘制泡泡
+        function drawBubbles() {
+            bubbles.forEach(bubble => {
                 ctx.beginPath();
-                ctx.moveTo(enemy.x, enemy.y - 15);
-                ctx.lineTo(enemy.x - 15, enemy.y + 15);
-                ctx.lineTo(enemy.x + 15, enemy.y + 15);
-                ctx.closePath();
+                ctx.arc(bubble.x, bubble.y, 15, 0, Math.PI * 2);
+                ctx.fillStyle = bubble.color + '80'; // 添加透明度
+                ctx.fill();
+                ctx.strokeStyle = bubble.color;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // 添加高光效果
+                ctx.beginPath();
+                ctx.arc(bubble.x - 5, bubble.y - 5, 5, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff40';
                 ctx.fill();
             });
         }
@@ -145,15 +180,15 @@
             if (gameOver) return;
 
             // 移动玩家
-            if (keys.left && player.x > 15) player.x -= player.speed;
-            if (keys.right && player.x < canvas.width - 15) player.x += player.speed;
+            if (keys.left && player.x > 20) player.x -= player.speed;
+            if (keys.right && player.x < canvas.width - 20) player.x += player.speed;
 
             // 发射子弹
             if (keys.space && currentTime - lastShot > 250) {
                 bullets.push({
                     x: player.x,
                     y: player.y - 15,
-                    speed: 7
+                    speed: 8
                 });
                 lastShot = currentTime;
             }
@@ -164,61 +199,86 @@
                 return bullet.y > 0;
             });
 
-            // 生成敌人
-            if (Math.random() < 0.02) {
-                enemies.push({
+            // 生成泡泡
+            if (bubbles.length < 5 && Math.random() < 0.02) {
+                bubbles.push({
                     x: Math.random() * (canvas.width - 30) + 15,
                     y: -15,
-                    speed: 2
+                    speed: 1 + level * 0.5,
+                    color: getRandomColor()
                 });
             }
 
-            // 更新敌人位置和检查碰撞
-            for (let i = enemies.length - 1; i >= 0; i--) {
-                const enemy = enemies[i];
-                enemy.y += enemy.speed;
+            // 更新泡泡位置和检查碰撞
+            for (let i = bubbles.length - 1; i >= 0; i--) {
+                const bubble = bubbles[i];
+                bubble.y += bubble.speed;
 
                 // 检查子弹碰撞
                 for (let j = bullets.length - 1; j >= 0; j--) {
                     const bullet = bullets[j];
-                    if (Math.abs(bullet.x - enemy.x) < 20 && 
-                        Math.abs(bullet.y - enemy.y) < 20) {
+                    const dx = bullet.x - bubble.x;
+                    const dy = bullet.y - bubble.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 20) {
                         bullets.splice(j, 1);
-                        enemies.splice(i, 1);
-                        score += 10;
-                        scoreElement.textContent = '分数: ' + score;
+                        bubbles.splice(i, 1);
+                        score += 10 * level;
+                        bubblesCleared++;
+                        scoreElement.textContent = 'Score: ' + score;
+                        
+                        // 检查是否完成关卡
+                        if (bubblesCleared >= totalBubbles) {
+                            level++;
+                            bubblesCleared = 0;
+                            totalBubbles += 5; // 每关增加5个泡泡
+                            levelElement.textContent = 'Level: ' + level;
+                        }
                         break;
                     }
                 }
 
                 // 检查玩家碰撞
-                if (!gameOver && enemy.y < canvas.height &&
-                    Math.abs(player.x - enemy.x) < 25 && 
-                    Math.abs(player.y - enemy.y) < 25) {
-                    gameOver = true;
+                if (!gameOver && bubble.y < canvas.height) {
+                    const dx = player.x - bubble.x;
+                    const dy = player.y - bubble.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 30) {
+                        lives--;
+                        livesElement.textContent = 'Lives: ' + lives;
+                        bubbles.splice(i, 1);
+
+                        if (lives <= 0) {
+                            gameOver = true;
+                        }
+                        continue;
+                    }
                 }
 
-                // 移除超出屏幕的敌人
-                if (enemy.y > canvas.height) {
-                    enemies.splice(i, 1);
+                // 移除超出屏幕的泡泡
+                if (bubble.y > canvas.height) {
+                    bubbles.splice(i, 1);
                 }
             }
         }
 
         // 绘制游戏结束画面
         function drawGameOver() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             ctx.fillStyle = '#ff4444';
             ctx.font = '48px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('游戏结束!', canvas.width/2, canvas.height/2 - 50);
+            ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2 - 50);
             
             ctx.fillStyle = '#fff';
             ctx.font = '24px Arial';
-            ctx.fillText('最终分数: ' + score, canvas.width/2, canvas.height/2 + 10);
-            ctx.fillText('按空格键重新开始', canvas.width/2, canvas.height/2 + 50);
+            ctx.fillText('Final Score: ' + score, canvas.width/2, canvas.height/2 + 10);
+            ctx.fillText('Level Reached: ' + level, canvas.width/2, canvas.height/2 + 40);
+            ctx.fillText('Press SPACE to restart', canvas.width/2, canvas.height/2 + 80);
 
             if (keys.space) {
                 resetGame();
@@ -228,11 +288,17 @@
         // 重置游戏
         function resetGame() {
             score = 0;
+            level = 1;
+            lives = 3;
+            bubblesCleared = 0;
+            totalBubbles = 10;
             gameOver = false;
             bullets = [];
-            enemies = [];
+            bubbles = [];
             player.x = canvas.width / 2;
-            scoreElement.textContent = '分数: 0';
+            scoreElement.textContent = 'Score: 0';
+            levelElement.textContent = 'Level: 1';
+            livesElement.textContent = 'Lives: 3';
             lastShot = 0;
         }
 
@@ -241,12 +307,23 @@
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+            // 绘制星空背景
+            for (let i = 0; i < 50; i++) {
+                ctx.fillStyle = 'rgba(255, 255, 255, ' + Math.random() + ')';
+                ctx.fillRect(
+                    Math.random() * canvas.width,
+                    Math.random() * canvas.height,
+                    1,
+                    1
+                );
+            }
+
             update(currentTime);
             
             if (!gameOver) {
                 drawPlayer();
                 drawBullets();
-                drawEnemies();
+                drawBubbles();
             } else {
                 drawGameOver();
             }
