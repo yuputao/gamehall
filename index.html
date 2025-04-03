@@ -5,59 +5,46 @@
     <title>GameHall - Space Bubble Shooter</title>
     <style>
         body {
+            margin: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
-            background-color: #1a1a1a;
-            background-image: linear-gradient(45deg, #1a1a1a 0%, #2c3e50 100%);
+            background: #000;
+            font-family: Arial, sans-serif;
             color: white;
-            font-family: 'Arial', sans-serif;
-            flex-direction: column;
         }
         .game-container {
             text-align: center;
-            padding: 20px;
-            background-color: rgba(51, 51, 51, 0.9);
-            border-radius: 15px;
-            margin: 20px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
         canvas {
-            background-color: rgba(0, 0, 0, 0.8);
-            border: 2px solid #444;
+            border: 2px solid #333;
             border-radius: 10px;
+            background: linear-gradient(to bottom, #000033, #000066);
             margin: 20px 0;
         }
         .stats {
             display: flex;
             justify-content: space-around;
-            margin: 10px 0;
+            margin-bottom: 20px;
             font-size: 20px;
-        }
-        #score, #level, #lives {
-            color: #4CAF50;
-            margin: 0 15px;
+            color: #fff;
         }
         .controls {
-            background-color: rgba(34, 34, 34, 0.8);
-            padding: 15px;
-            border-radius: 8px;
-            margin: 10px 0;
-            text-align: left;
+            color: #aaa;
+            margin-top: 20px;
         }
         .key {
-            background-color: #444;
+            display: inline-block;
             padding: 2px 8px;
+            background: #333;
             border-radius: 4px;
-            margin: 0 4px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            margin: 0 2px;
         }
         h1 {
             color: #4CAF50;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
         }
     </style>
 </head>
@@ -76,8 +63,7 @@
             <p>- Shoot: <span class="key">SPACE</span></p>
             <p>- Clear all bubbles to advance to next level!</p>
         </div>
-    </div>
-
+    </div>   
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -89,17 +75,18 @@
         const stars = Array(50).fill().map(() => ({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
-            size: 1,  // 固定大小为1
-            speed: 0.3,  // 固定速度
-            brightness: 0.8  // 固定亮度
+            size: 1,
+            speed: 0.3,
+            brightness: 0.8
         }));
 
         // 预加载飞船图片
         const shipImage = new Image();
+        let gameStarted = false;
         shipImage.onload = function() {
             gameStarted = true;
             requestAnimationFrame(gameLoop);
-};
+        };
         shipImage.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAB2AAAAdgB+lymcgAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAKsSURBVFiF7ZbNa1xVGMZ/577MpJ1JJ5PWJrYxbWMSMGlriBtBEFy4UHDhRnDhQkQQdCEIgv4JrkVcCi5cuXAjbnTlRtSFuBJ0IVhB26Yx6YfSJk0zk5l7z+PinJu5M7kzuR+JIOQHh/ue+77nPM/7cc69V1SVu2l2V6P/B/C/BxCpO7lz3H7SLPKEwIuKPCvIw4KkgBjQBbQF7gPAb8A3wNequJ0wSaR6B3Z2kMeAV4EXAAfQKoYKcAP4EPgkn+NG7QvVAOzsILuA14CXgRZAoqtXQQFfkRJwGPgon+N6GMgsgJ0d5HHgDeB5wKgGUEUVvEAJKAK3gVvAMBAHEkAaSAPzgfeAD/I5fg4CmQGws4M8DbwPbA/NFVRAFXyFMlBWpaTKlCojKFcRvlNlBGEaIQZkgEXAPcBaYDvwbj7H0SBIBMDODvI88BawLJirKgrgKz7CpCpFVYqqjKFMCvylypQqU0BRlTGBvCr9CIOqFBQmEGYj9ABrgF35HJ/XB7Czg+wG3gTuC+YKKKr4KKMoV1S5pMoNVf5UZQxlEuWWKsOqDKtySZU/VLmsyqjCJIIP1Qg0A6uBl+zsIBumAOzsIM8C+4FsaK4CquABV4CLqgyo0o9yUZVrwJAqV1W5osqQKv2qXFBlAGVElRIgqvgI9Qi0AZuBfTs7yKOGnR2kE3gbWBY1V1BPwVe4CfQp/KzQp3BB4TfgksIVoF/hZ4U+4CYwgeIr+AhajUC4Ei3AKuANOzvIUgM4ACwIXlAUzyuD74HvKOAr+AqewgRwDfge+Bb4FvgOGFTwUPAUfMBX8JXp5oTLEAeWAAcM4AVgbmCu4Lv4PngKvkJZoQxMApPAGDAKjAB/A38Bv6P8gHIdGFeYDN4pK/i+4qngK3jK9CkJlyEGLAYeNoAHgNSsuwc8QBXKKKWZcYEYkAaaDWBuTYQKCp6CF5orUEYoR+YKZZRy1Px/EYH/DsA/6VQzZh8/GAYAAAAASUVORK5CYII=';
 
         // 游戏状态
@@ -131,8 +118,7 @@
             right: false,
             space: false
         };
-
-        // 键盘事件监听
+                // 键盘事件监听
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft') keys.left = true;
             if (e.key === 'ArrowRight') keys.right = true;
@@ -168,14 +154,14 @@
         // 绘制星空背景
         function drawStars() {
             stars.forEach(star => {
-                ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.5})`;
+                ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`;
                 ctx.fillRect(star.x, star.y, star.size, star.size);
             });
         }
 
         // 绘制玩家飞船
         function drawPlayer() {
-            if (gameStarted) {
+            if (gameStarted && shipImage.complete) {
                 ctx.save();
                 ctx.translate(player.x, player.y);
                 ctx.drawImage(shipImage, -20, -20, 40, 40);
@@ -184,14 +170,14 @@
         }
 
         // 绘制子弹
-        function drawPlayer() {
-    if (gameStarted && shipImage.complete) {  // 添加 shipImage.complete 检查
-        ctx.save();
-        ctx.translate(player.x, player.y);
-        ctx.drawImage(shipImage, -20, -20, 40, 40);
-        ctx.restore();
-    }
-}
+        function drawBullets() {
+            ctx.fillStyle = '#fff';
+            bullets.forEach(bullet => {
+                ctx.beginPath();
+                ctx.arc(bullet.x, bullet.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
 
         // 绘制泡泡
         function drawBubbles() {
@@ -211,8 +197,7 @@
                 ctx.fill();
             });
         }
-
-        // 更新游戏状态
+                // 更新游戏状态
         function update(currentTime) {
             if (gameOver) return;
 
@@ -341,23 +326,22 @@
 
         // 游戏主循环
         function gameLoop(currentTime) {
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    drawStars();  // 添加这行
-    updateStars(); // 添加这行
-    update(currentTime);
-    
-    if (!gameOver) {
-        drawPlayer();
-        drawBullets();
-        drawBubbles();
-    } else {
-        drawGameOver();
-    }
+            drawStars();
+            update(currentTime);
+            
+            if (!gameOver) {
+                drawPlayer();
+                drawBullets();
+                drawBubbles();
+            } else {
+                drawGameOver();
+            }
 
-    requestAnimationFrame(gameLoop);
-}
+            requestAnimationFrame(gameLoop);
+        }
 
         // 等待图片加载完成后再开始游戏
         if (!gameStarted) {
