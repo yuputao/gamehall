@@ -195,20 +195,61 @@
             }
 
             preload() {
+                // 设置背景色，让 loading 文字更容易看到
+                this.cameras.main.setBackgroundColor('#000000');
+                
                 // 添加加载界面
                 const loadingText = this.add.text(400, 300, 'Loading...', {
                     fontSize: '32px',
-                    fill: '#fff'
+                    fill: '#fff',
+                    fontFamily: 'Arial'
                 }).setOrigin(0.5);
 
-                // 使用 Base64 编码的简单图片资源替代外部链接
-                this.load.image('background', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
-                this.load.image('ship', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAn0lEQVR42mNkGGDAOMD2M4w6YNQBow4YdcCoA0YdMOqAUQeMOmDUAaMOGHXAqANGHTDqgFEHjDoAWw0Qm/4D8X8s+D8Q45UfMAfgwwQdgM8Cow4YdcCoA0YdMOqAUQeMOmDUAaMOGHXAqANGHTDqgFEHjDpg1AGjDhh1wKgDRh0w6oBRB4w6YNQBow4YdcCoA0YdMOqAUQcMqAMAGhw7P0m5+0QAAAAASUVORK5CYII=');
-                this.load.image('bullet', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAJklEQVR42mNkYGD4z4AFMOGSZMKlAF0SQxG6ThQ+C7ohLHgdDAC7/g/BXwDnjAAAAABJRU5ErkJggg==');
-                this.load.image('enemy', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAW0lEQVR42mNkoBAwUqifYRAY8B8JE2UYSQags5nQ2MiS6GIYBmBzKrIYigEwzSDFmQT9TbQX8DmTKC+Q4kySvUCsM8nyArYwwBc7A+cFUrzBRGocUB4LVEsLAL8oHEv4tB6LAAAAAElFTkSuQmCC');
-
+                // 使用更简单的图形替代图片资源
+                const graphics = this.add.graphics();
+                graphics.fillStyle(0x0000ff, 1);
+                
+                // 创建简单的几何图形作为游戏对象
                 this.load.on('complete', () => {
+                    // 背景
+                    this.add.rectangle(400, 300, 800, 600, 0x000033);
+                    
+                    // 飞船
+                    this.player = this.add.rectangle(400, 500, 30, 30, 0x00ff00);
+                    this.physics.add.existing(this.player);
+                    this.player.body.setCollideWorldBounds(true);
+                    
                     loadingText.destroy();
+                    this.gameReady = true;
+                });
+                
+                // 立即触发完成事件
+                this.load.start();
+            }
+
+            create() {
+                if (!this.gameReady) return;
+                
+                this.bullets = this.physics.add.group();
+                this.enemies = this.physics.add.group();
+                
+                this.scoreText = this.add.text(16, 16, 'Score: 0', { 
+                    fontSize: '32px', 
+                    fill: '#fff',
+                    fontFamily: 'Arial'
+                });
+                
+                this.cursors = this.input.keyboard.createCursorKeys();
+                this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+                
+                this.physics.add.overlap(this.bullets, this.enemies, this.hitEnemy, null, this);
+                this.physics.add.overlap(this.player, this.enemies, this.gameOver, null, this);
+                
+                this.time.addEvent({
+                    delay: 2000,
+                    callback: this.spawnEnemy,
+                    callbackScope: this,
+                    loop: true
                 });
             }
 
