@@ -120,13 +120,12 @@
             if (keys.right && player.x < canvas.width - player.width/2) player.x += player.speed;
 
             // 发射子弹
-            if (keys.space && bullets.length < 5) {
+            if (keys.space && bullets.length < 8) {
                 bullets.push({
                     x: player.x,
                     y: player.y - 15,
-                    speed: 7
+                    speed: 10
                 });
-                keys.space = false;
             }
 
             // 移动子弹
@@ -145,29 +144,36 @@
             }
 
             // 移动敌人
-            enemies = enemies.filter(enemy => {
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const enemy = enemies[i];
                 enemy.y += enemy.speed;
-                
-                // 检查碰撞
-                bullets.forEach((bullet, bulletIndex) => {
-                    if (Math.abs(bullet.x - enemy.x) < 15 && 
-                        Math.abs(bullet.y - enemy.y) < 15) {
-                        bullets.splice(bulletIndex, 1);
+
+                // 检查子弹碰撞
+                for (let j = bullets.length - 1; j >= 0; j--) {
+                    const bullet = bullets[j];
+                    if (Math.abs(bullet.x - enemy.x) < 20 && 
+                        Math.abs(bullet.y - enemy.y) < 20) {
+                        // 击中敌人
+                        bullets.splice(j, 1);
+                        enemies.splice(i, 1);
                         score += 10;
                         scoreElement.textContent = '分数: ' + score;
-                        return false;
+                        break;
                     }
-                });
+                }
 
                 // 检查与玩家的碰撞
-                if (Math.abs(player.x - enemy.x) < 20 && 
+                if (enemy.y < canvas.height && 
+                    Math.abs(player.x - enemy.x) < 20 && 
                     Math.abs(player.y - enemy.y) < 20) {
                     gameOver = true;
                 }
 
-                return enemy.y < canvas.height && !gameOver;
-            });
-        }
+                // 移除超出屏幕的敌人
+                if (enemy.y > canvas.height) {
+                    enemies.splice(i, 1);
+                }
+            }
 
         // 绘制游戏结束画面
         function drawGameOver() {
