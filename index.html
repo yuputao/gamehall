@@ -8,7 +8,7 @@
     <meta name="keywords" content="space shooter, online games, free games, game nest, gaming hub">
     <link rel="canonical" href="https://gamehall.fun" />
     <meta name="theme-color" content="#007AFF">
-    <script src="https://unpkg.com/phaser@3.55.2/dist/phaser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
     <style>
         :root {
             --primary-color: #007AFF;
@@ -195,10 +195,21 @@
             }
 
             preload() {
-                this.load.image('background', 'https://labs.phaser.io/assets/skies/space3.png');
-                this.load.image('ship', 'https://labs.phaser.io/assets/sprites/thrust_ship2.png');
-                this.load.image('bullet', 'https://labs.phaser.io/assets/sprites/bullets/bullet6.png');
-                this.load.image('enemy', 'https://labs.phaser.io/assets/sprites/asteroid.png');
+                // 添加加载界面
+                const loadingText = this.add.text(400, 300, 'Loading...', {
+                    fontSize: '32px',
+                    fill: '#fff'
+                }).setOrigin(0.5);
+
+                // 使用 Base64 编码的简单图片资源替代外部链接
+                this.load.image('background', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
+                this.load.image('ship', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAn0lEQVR42mNkGGDAOMD2M4w6YNQBow4YdcCoA0YdMOqAUQeMOmDUAaMOGHXAqANGHTDqgFEHjDoAWw0Qm/4D8X8s+D8Q45UfMAfgwwQdgM8Cow4YdcCoA0YdMOqAUQeMOmDUAaMOGHXAqANGHTDqgFEHjDpg1AGjDhh1wKgDRh0w6oBRB4w6YNQBow4YdcCoA0YdMOqAUQcMqAMAGhw7P0m5+0QAAAAASUVORK5CYII=');
+                this.load.image('bullet', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAJklEQVR42mNkYGD4z4AFMOGSZMKlAF0SQxG6ThQ+C7ohLHgdDAC7/g/BXwDnjAAAAABJRU5ErkJggg==');
+                this.load.image('enemy', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAW0lEQVR42mNkoBAwUqifYRAY8B8JE2UYSQags5nQ2MiS6GIYBmBzKrIYigEwzSDFmQT9TbQX8DmTKC+Q4kySvUCsM8nyArYwwBc7A+cFUrzBRGocUB4LVEsLAL8oHEv4tB6LAAAAAElFTkSuQmCC');
+
+                this.load.on('complete', () => {
+                    loadingText.destroy();
+                });
             }
 
             create() {
@@ -278,24 +289,20 @@
                 this.gameOver = true;
                 this.physics.pause();
                 
-                // Create game over overlay
                 const overlay = this.add.rectangle(400, 300, 800, 600, 0x000000, 0.7);
                 overlay.setOrigin(0.5);
                 
-                // Game over text
                 const gameOverText = this.add.text(400, 250, 'Game Over', { 
                     fontSize: '64px', 
                     fill: '#ff0000',
                     fontStyle: 'bold'
                 }).setOrigin(0.5);
                 
-                // Final score
                 const scoreText = this.add.text(400, 320, 'Final Score: ' + this.score, { 
                     fontSize: '32px', 
                     fill: '#fff'
                 }).setOrigin(0.5);
                 
-                // Restart button
                 const restartButton = this.add.text(400, 400, 'Play Again', { 
                     fontSize: '32px', 
                     fill: '#fff',
@@ -328,10 +335,36 @@
                     debug: false
                 }
             },
-            scene: MainScene
+            scene: MainScene,
+            scale: {
+                mode: Phaser.Scale.FIT,
+                autoCenter: Phaser.Scale.CENTER_BOTH
+            }
         };
 
-        const game = new Phaser.Game(config);
+        window.addEventListener('load', () => {
+            try {
+                const game = new Phaser.Game(config);
+            } catch (error) {
+                console.error('Game initialization failed:', error);
+                const gameCanvas = document.getElementById('gameCanvas');
+                if (gameCanvas) {
+                    gameCanvas.innerHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <h3 style="color: red;">游戏加载失败</h3>
+                            <p>请刷新页面重试。如果问题持续存在，请检查您的浏览器是否支持WebGL。</p>
+                        </div>
+                    `;
+                }
+            }
+        });
     </script>
+    
+    <noscript>
+        <div style="text-align: center; padding: 20px;">
+            <h3 style="color: red;">JavaScript未启用</h3>
+            <p>请启用JavaScript以运行游戏。</p>
+        </div>
+    </noscript>
 </body>
 </html>
