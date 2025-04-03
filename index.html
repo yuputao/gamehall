@@ -86,22 +86,21 @@
         const livesElement = document.getElementById('lives');
 
         // 创建星星数组
-        const stars = Array(150).fill().map(() => ({
+        const stars = Array(50).fill().map(() => ({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
-            size: Math.random() * 2 + 1,
-            speed: Math.random() * 0.5 + 0.1
+            size: 1,  // 固定大小为1
+            speed: 0.3,  // 固定速度
+            brightness: 0.8  // 固定亮度
         }));
 
         // 预加载飞船图片
         const shipImage = new Image();
-        shipImage.src = 'data:image/png;base64,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';
-
-        let gameStarted = false;
         shipImage.onload = function() {
             gameStarted = true;
             requestAnimationFrame(gameLoop);
-        };
+};
+        shipImage.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAB2AAAAdgB+lymcgAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAKsSURBVFiF7ZbNa1xVGMZ/577MpJ1JJ5PWJrYxbWMSMGlriBtBEFy4UHDhRnDhQkQQdCEIgv4JrkVcCi5cuXAjbnTlRtSFuBJ0IVhB26Yx6YfSJk0zk5l7z+PinJu5M7kzuR+JIOQHh/ue+77nPM/7cc69V1SVu2l2V6P/B/C/BxCpO7lz3H7SLPKEwIuKPCvIw4KkgBjQBbQF7gPAb8A3wNequJ0wSaR6B3Z2kMeAV4EXAAfQKoYKcAP4EPgkn+NG7QvVAOzsILuA14CXgRZAoqtXQQFfkRJwGPgon+N6GMgsgJ0d5HHgDeB5wKgGUEUVvEAJKAK3gVvAMBAHEkAaSAPzgfeAD/I5fg4CmQGws4M8DbwPbA/NFVRAFXyFMlBWpaTKlCojKFcRvlNlBGEaIQZkgEXAPcBaYDvwbj7H0SBIBMDODvI88BawLJirKgrgKz7CpCpFVYqqjKFMCvylypQqU0BRlTGBvCr9CIOqFBQmEGYj9ABrgF35HJ/XB7Czg+wG3gTuC+YKKKr4KKMoV1S5pMoNVf5UZQxlEuWWKsOqDKtySZU/VLmsyqjCJIIP1Qg0A6uBl+zsIBumAOzsIM8C+4FsaK4CquABV4CLqgyo0o9yUZVrwJAqV1W5osqQKv2qXFBlAGVElRIgqvgI9Qi0AZuBfTs7yKOGnR2kE3gbWBY1V1BPwVe4CfQp/KzQp3BB4TfgksIVoF/hZ4U+4CYwgeIr+AhajUC4Ei3AKuANOzvIUgM4ACwIXlAUzyuD74HvKOAr+AqewgRwDfge+Bb4FvgOGFTwUPAUfMBX8JXp5oTLEAeWAAcM4AVgbmCu4Lv4PngKvkJZoQxMApPAGDAKjAB/A38Bv6P8gHIdGFeYDN4pK/i+4qngK3jK9CkJlyEGLAYeNoAHgNSsuwc8QBXKKKWZcYEYkAaaDWBuTYQKCp6CF5orUEYoR+YKZZRy1Px/EYH/DsA/6VQzZh8/GAYAAAAASUVORK5CYII=';
 
         // 游戏状态
         let score = 0;
@@ -185,14 +184,14 @@
         }
 
         // 绘制子弹
-        function drawBullets() {
-            ctx.fillStyle = '#fff';
-            bullets.forEach(bullet => {
-                ctx.beginPath();
-                ctx.arc(bullet.x, bullet.y, 3, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
+        function drawPlayer() {
+    if (gameStarted && shipImage.complete) {  // 添加 shipImage.complete 检查
+        ctx.save();
+        ctx.translate(player.x, player.y);
+        ctx.drawImage(shipImage, -20, -20, 40, 40);
+        ctx.restore();
+    }
+}
 
         // 绘制泡泡
         function drawBubbles() {
