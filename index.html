@@ -49,6 +49,7 @@
         let level = 1;
         let lives = 3;
         let gameOver = false;
+        let gameStarted = false;
 
         // Player
         const player = {
@@ -75,7 +76,12 @@
             if (e.key === 'ArrowRight') keys.right = true;
             if (e.key === ' ') {
                 keys.space = true;
-                if (gameOver) resetGame();
+                if (!gameStarted) {
+                    gameStarted = true;
+                } else if (gameOver) {
+                    resetGame();
+                }
+                e.preventDefault();
             }
         });
 
@@ -112,9 +118,16 @@
             });
         }
 
+        function drawStartScreen() {
+            ctx.fillStyle = '#fff';
+            ctx.font = '30px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Press SPACE to Start', canvas.width/2, canvas.height/2);
+        }
+
         // Update game state
         function update() {
-            if (gameOver) return;
+            if (!gameStarted || gameOver) return;
 
             // Move player
             if (keys.left && player.x > player.size) {
@@ -216,21 +229,27 @@
 
         // Game loop
         function gameLoop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Clear the canvas with black background
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            update();
-            drawPlayer();
-            drawBullets();
-            drawBubbles();
-            
-            if (gameOver) {
-                drawGameOver();
+            if (!gameStarted) {
+                drawStartScreen();
+            } else {
+                update();
+                drawPlayer();
+                drawBullets();
+                drawBubbles();
+                
+                if (gameOver) {
+                    drawGameOver();
+                }
             }
             
             requestAnimationFrame(gameLoop);
         }
 
-        // Start game
+        // Start game loop
         gameLoop();
     </script>
 </body>
